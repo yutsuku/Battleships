@@ -1,0 +1,1059 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/..\FrameXML\UI.xsd">
+	<Script File="Battleships.lua"/>
+	
+	<Button name="BattleshipsButtonGenericTemplate" inherits="ItemButtonTemplate" virtual="true" />
+	<Button name="BattleshipsGridButtonTemplate" virtual="true">
+		<Size>
+			<AbsDimension x="27" y="27"/>
+		</Size>
+		
+		<HighlightTexture file="Interface\Buttons\ButtonHilight-Square" alphaMode="ADD"/>
+		
+		<Backdrop edgeFile="Interface\DialogFrame\UI-DialogBox-Border">
+			<EdgeSize val="16"/>
+			<BorderColor r="1" g="1" b="1" a="0.2" />
+		</Backdrop>
+		
+		<Frames>
+			<Frame name="Hit" hidden="true" frameStrata="HIGH">
+				<Anchors>
+					<Anchor point="TOPLEFT">
+						<Offset x="0" y="0"/>
+					</Anchor>
+				</Anchors>
+				<Size>
+					<AbsDimension x="27" y="27"/>
+				</Size>
+				<Backdrop bgFile="Interface\AddOns\Battleships\textures\icons\Hit"/>
+			</Frame>
+			<Frame name="Miss" hidden="true" frameStrata="HIGH">
+				<Anchors>
+					<Anchor point="TOPLEFT">
+						<Offset x="0" y="0"/>
+					</Anchor>
+				</Anchors>
+				<Size>
+					<AbsDimension x="27" y="27"/>
+				</Size>
+				<Backdrop bgFile="Interface\AddOns\Battleships\textures\icons\Miss"/>
+			</Frame>
+			<Frame name="Ship" hidden="true" frameStrata="MEDIUM">
+				<Anchors>
+					<Anchor point="TOPLEFT">
+						<Offset x="0" y="0"/>
+					</Anchor>
+				</Anchors>
+				<Size>
+					<AbsDimension x="27" y="27"/>
+				</Size>
+				<Backdrop bgFile="Interface\TimeManager\ResetButton"/>
+			</Frame>
+			<Frame name="ShipShadow" hidden="true" frameStrata="MEDIUM" alpha="0.5">
+				<Anchors>
+					<Anchor point="TOPLEFT">
+						<Offset x="0" y="0"/>
+					</Anchor>
+				</Anchors>
+				<Size>
+					<AbsDimension x="27" y="27"/>
+				</Size>
+				<Backdrop bgFile="Interface\TimeManager\ResetButton"/>
+			</Frame>
+		</Frames>
+		<Scripts>
+			<OnLoad>
+				this:Disable()
+			</OnLoad>
+			<OnClick>
+				Battleships:Grid_OnClick(self, button)
+			</OnClick>
+		</Scripts>
+	</Button>
+	<Button name="BattleshipsGridMeButtonTemplate" inherits="BattleshipsGridButtonTemplate" virtual="true">
+		<Scripts>
+			<OnLoad>
+				self:RegisterForClicks("LeftButtonDown", "RightButtonDown");
+			</OnLoad>
+			<OnClick>
+				Battleships:ClearShadow(self)
+				Battleships:Grid_OnClick(self, button)
+				Battleships:GridMe_OnClick(self, button)
+			</OnClick>
+			<OnEnter>
+				Battleships:DrawShadow(self)
+			</OnEnter>
+			<OnLeave>
+				Battleships:ClearShadow(self)
+			</OnLeave>
+		</Scripts>
+	</Button>
+	<Button name="BattleshipsGridEnemyButtonTemplate" inherits="BattleshipsGridButtonTemplate" virtual="true">
+		<Scripts>
+			<OnLoad>
+				self:RegisterForClicks("LeftButtonDown", "RightButtonDown");
+			</OnLoad>
+			<OnClick>
+				Battleships:Grid_OnClick(self, button)
+				Battleships:GridEnemy_OnClick(self, button)
+			</OnClick>
+		</Scripts>
+	</Button>
+	<Button name="BattleshipsButtonShipPicker" inherits="UIPanelButtonTemplate" virtual="true">
+		<Size x="100" y="22" />
+		<Anchors>
+			<Anchor point="BOTTOMLEFT">
+				<Offset x="24" y="37"/>
+			</Anchor>
+		</Anchors>
+		<NormalFont style="GameFontWhiteSmall" />
+		<HighlightFont style="GameFontWhiteSmall"/>
+		<DisabledFont style="GameFontDisableSmall"/>
+		<Scripts>
+			<OnLoad>
+				this:Disable()
+			</OnLoad>
+			<OnClick>
+				this:Disable()
+				SetCursor("Interface/Cursor/vehichleCursor")
+				Battleships:ShipPicker_OnClick(self, this:GetID())
+			</OnClick>
+		</Scripts>
+	</Button>
+	
+	<Frame name="BattleshipsClockFrame" hidden="true">
+		<Scripts>
+			<OnUpdate>
+				Battleships:Clock_OnUpdate(self, elapsed)
+			</OnUpdate>
+			<OnShow>
+				self.timer = 0
+			</OnShow>
+			<OnHide>
+				self.timer = 0
+			</OnHide>
+		</Scripts>
+	</Frame>
+	
+	<Frame name="BattleshipsFrame" enableMouse="true" hidden="true" parent="UIParent">
+		<Size>
+			<AbsDimension x="769" y="444"/>
+		</Size>
+		<Anchors>
+			<Anchor point="TOPLEFT">
+				<Offset>
+					<AbsDimension x="0" y="-104"/>
+				</Offset>
+			</Anchor>
+		</Anchors>
+		<Layers>
+			<Layer level="ARTWORK">
+				<Texture name="$parentBgLeft" file="Interface\GuildBankFrame\UI-GuildBankFrame-Left">
+					<Size>
+						<AbsDimension x="512" y="512"/>
+					</Size>
+					<Anchors>
+						<Anchor point="TOPLEFT"/>
+					</Anchors>
+				</Texture>
+				<Texture name="$parentBgRight" file="Interface\GuildBankFrame\UI-GuildBankFrame-Right">
+					<Size>
+						<AbsDimension x="512" y="512"/>
+					</Size>
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeTo="$parentBgLeft" relativePoint="TOPRIGHT">
+							<Offset x="0" y="-11"/>
+						</Anchor>
+					</Anchors>
+				</Texture>
+			</Layer>
+			<Layer level="OVERLAY">
+				<FontString name="$parentTitle" inherits="GameFontNormal" text="Battleships">
+					<Anchors>
+						<Anchor point="CENTER" relativePoint="TOP">
+							<Offset x="0" y="-24"/>
+						</Anchor>
+					</Anchors>
+				</FontString>
+				<FontString name="$parentLabel" inherits="GameFontNormalSmall" text="Preparing for battle">
+					<Anchors>
+						<Anchor point="BOTTOMLEFT" relativePoint="BOTTOMLEFT">
+							<Offset x="32" y="18"/>
+						</Anchor>
+					</Anchors>
+				</FontString>
+				<Texture name="$parentGlowLeft" file="Interface\AddOns\Battleships\textures\glowLeft" alphaMode="ADD" alpha="0" parentKey="glowLeft">
+					<Size>
+						<AbsDimension x="512" y="512"/>
+					</Size>
+					<Anchors>
+						<Anchor point="CENTER" relativeTo="$parentBgLeft" relativePoint="CENTER">
+							<Offset>
+								<AbsDimension x="-3" y="-3"/>
+							</Offset>
+						</Anchor>
+					</Anchors>
+					<Animations>
+						<AnimationGroup name="$parentAnimIn" parentKey="animIn">
+							<Alpha change="1" duration="0.2" order="1"/>
+							<Alpha change="-1" duration="0.5" order="2"/>
+						</AnimationGroup>
+					</Animations>
+				</Texture>
+				<Texture name="$parentGlowRight" file="Interface\AddOns\Battleships\textures\glowRight" alphaMode="ADD" alpha="0" parentKey="glowRight">
+					<Size>
+						<AbsDimension x="512" y="512"/>
+					</Size>
+					<Anchors>
+						<Anchor point="LEFT" relativeTo="$parentGlowLeft" relativePoint="RIGHT" />
+					</Anchors>
+					<Animations>
+						<AnimationGroup name="$parentAnimIn" parentKey="animIn">
+							<Alpha change="1" duration="0.2" order="1"/>
+							<Alpha change="-1" duration="0.5" order="2"/>
+						</AnimationGroup>
+					</Animations>
+				</Texture>
+				<Texture name="$parentShine" file="Interface\AddOns\Battleships\textures\shine" alphaMode="BLEND" alpha="0" parentKey="shine">
+					<Size>
+						<AbsDimension x="128" y="512"/>
+					</Size>
+					<Anchors>
+						<Anchor point="TOPLEFT">
+							<Offset x="0" y="0"/>
+						</Anchor>
+					</Anchors>
+					<Animations>
+						<AnimationGroup name="$parentAnimIn" parentKey="animIn">
+							<Alpha change="1" duration="0.1" order="1"/>
+							<Translation offsetX="627" offsetY="0" duration="0.85" order="2"/>
+							<Alpha startDelay="0.35" change="-1" duration="0.5" order="2"/>
+						</AnimationGroup>
+					</Animations>
+				</Texture>
+			</Layer>
+		</Layers>
+		<Frames>
+			<Frame name="$parentWarning" hidden="true" enableMouse="true">
+				<Size>
+					<AbsDimension x="384" y="32"/>
+				</Size>
+				<Anchors>
+					<Anchor point="TOP">
+						<Offset>
+							<AbsDimension x="0" y="-35"/>
+						</Offset>							
+					</Anchor>
+				</Anchors>					
+				<Layers>
+					<Layer level="ARTWORK">
+						<FontString name="$parentText" inherits="GameFontGreenLarge" text="TEXT">
+							<Anchors>
+								<Anchor point="CENTER">
+									<Offset>
+										<AbsDimension x="16" y="0"/>
+									</Offset>
+								</Anchor>
+							</Anchors>
+							<Color r="1.0" g="1.0" b="1.0" a="1.0"/>
+						</FontString>									
+						<Texture file="Interface\DialogFrame\UI-Dialog-Icon-AlertNew">
+							<Size>
+								<AbsDimension x="32" y="32"/>
+							</Size>		
+							<Anchors>
+								<Anchor point="RIGHT" relativeTo="$parentText" relativePoint="LEFT">
+									<Offset>
+										<AbsDimension x="0" y="-2"/>
+									</Offset>					
+								</Anchor>
+							</Anchors>
+						</Texture>						
+					</Layer>
+				</Layers>
+			</Frame>				
+		
+			<Button name="$parentCloseButton" inherits="UIPanelCloseButton">
+				<Anchors>
+					<Anchor point="TOPRIGHT">
+						<Offset x="3" y="-8"/>
+					</Anchor>
+				</Anchors>
+				<Scripts>
+					<OnClick>
+						Battleships:Close_OnClick(self)
+					</OnClick>
+				</Scripts>
+			</Button>
+			
+			<Button name="$parentReadyButton" inherits="UIPanelButtonTemplate" text="Ready">
+				<Size x="100" y="22" />
+				<Anchors>
+					<Anchor point="CENTER">
+						<Offset x="4" y="0"/>
+					</Anchor>
+				</Anchors>
+				<Scripts>
+					<OnClick>
+						Battleships:ReadyButton_OnClick(self)
+					</OnClick>
+					<OnLoad>
+						this:Disable()
+					</OnLoad>
+				</Scripts>
+			</Button>
+			<Button name="$parentClearButton" inherits="UIPanelButtonTemplate" text="Clear">
+				<Size x="100" y="22" />
+				<Anchors>
+					<Anchor point="TOP" relativeTo="$parentReadyButton" relativePoint="BOTTOM">
+						<Offset x="0" y="0"/>
+					</Anchor>
+				</Anchors>
+				<Scripts>
+					<OnLoad>
+						this:Disable()
+					</OnLoad>
+					<OnClick>
+						Battleships:ClearButton_OnClick(self)
+					</OnClick>
+				</Scripts>
+			</Button>
+			
+			<Button name="$parentButtonAircraft" inherits="BattleshipsButtonShipPicker" text="Aircraft carrier" id="1" />
+			<Button name="$parentButtonBattleship" inherits="BattleshipsButtonShipPicker" text="Battleship" id="2">
+				<Anchors><Anchor point="TOPLEFT" relativeTo="$parentButtonAircraft" relativePoint="TOPRIGHT" /></Anchors>
+			</Button>
+			<Button name="$parentButtonSubmarine" inherits="BattleshipsButtonShipPicker" text="Submarine" id="3">
+				<Anchors><Anchor point="TOPLEFT" relativeTo="$parentButtonBattleship" relativePoint="TOPRIGHT" /></Anchors>
+			</Button>
+			<Button name="$parentButtonDestroyer" inherits="BattleshipsButtonShipPicker" text="Destroyer" id="4">
+				<Anchors><Anchor point="TOPLEFT" relativeTo="$parentButtonSubmarine" relativePoint="TOPRIGHT" /></Anchors>
+			</Button>
+			<Button name="$parentButtonCruiser" inherits="BattleshipsButtonShipPicker" text="Cruiser" id="5">
+				<Anchors><Anchor point="TOPLEFT" relativeTo="$parentButtonDestroyer" relativePoint="TOPRIGHT" /></Anchors>
+			</Button>
+			
+			<Button name="$parentRotateButton">
+				<Size>
+					<AbsDimension x="22" y="22"/>
+				</Size>
+				<Anchors>
+				<Anchor point="BOTTOMRIGHT">
+						<Offset x="-16" y="36"/>
+					</Anchor>
+				</Anchors>
+
+				<NormalTexture file="Interface\Buttons\UI-RotationRight-Button-Up"/>
+				<PushedTexture file="Interface\Buttons\UI-RotationRight-Button-Down"/>
+				<HighlightTexture file="Interface\Buttons\ButtonHilight-Round" alphaMode="ADD"/>
+				
+				<Scripts>
+					<OnClick>
+						PlaySound("igMainMenuOpen");
+						if Battleships.Ships.Picker.rotation == 0 then
+							Battleships.Ships.Picker.rotation = 1
+						else 
+							Battleships.Ships.Picker.rotation = 0
+						end
+					</OnClick>
+					<OnEnter>
+						GameTooltip_SetDefaultAnchor(GameTooltip, self)
+						GameTooltip:SetText("Battleships", HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b);
+						GameTooltip:AddLine("Change ship placement direction", NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b, 1);
+						GameTooltip:Show();
+					</OnEnter>
+					<OnLeave function="GameTooltip_Hide"/>
+				</Scripts>
+			</Button>
+			
+			<Frame name="$parentMe">
+				<Anchors>
+					<Anchor point="TOPLEFT">
+						<Offset x="32" y="-76"/>
+					</Anchor>
+				</Anchors>
+				<Size>
+					<AbsDimension x="302" y="302"/>
+				</Size>
+				<Backdrop bgFile="Interface\TutorialFrame\TutorialFrameBackground"
+				   edgeFile="Interface\DialogFrame\UI-DialogBox-Border" tile="true">
+					<EdgeSize val="16"/>
+					<TileSize val="32"/>
+					<BackgroundInsets left="5" right="5" top="5" bottom="5"/>
+				</Backdrop>
+				<Layers>
+					<Layer level="OVERLAY">
+						<FontString name="$parentLabel" inherits="GameFontNormal" text="Me">
+							<Anchors>
+								<Anchor point="CENTER" relativeTo="$parent" relativePoint="TOP">
+									<Offset x="0" y="25"/>
+								</Anchor>
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>
+				<Frames>
+					<Button name="$parentItem1" inherits="BattleshipsGridMeButtonTemplate" id="1">
+						<Anchors>
+							<Anchor point="TOPLEFT">
+								<Offset>
+									<AbsDimension x="16" y="-16"/>
+								</Offset>
+							</Anchor>
+						</Anchors>
+					</Button>
+					<Button name="$parentItem2" inherits="BattleshipsGridMeButtonTemplate" id="2">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem1" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem3" inherits="BattleshipsGridMeButtonTemplate" id="3">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem2" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem4" inherits="BattleshipsGridMeButtonTemplate" id="4">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem3" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem5" inherits="BattleshipsGridMeButtonTemplate" id="5">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem4" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem6" inherits="BattleshipsGridMeButtonTemplate" id="6">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem5" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem7" inherits="BattleshipsGridMeButtonTemplate" id="7">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem6" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem8" inherits="BattleshipsGridMeButtonTemplate" id="8">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem7" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem9" inherits="BattleshipsGridMeButtonTemplate" id="9">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem8" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem10" inherits="BattleshipsGridMeButtonTemplate" id="10">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem9" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem11" inherits="BattleshipsGridMeButtonTemplate" id="11">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem1" relativePoint="BOTTOMLEFT" /></Anchors>
+					</Button>
+					<Button name="$parentItem12" inherits="BattleshipsGridMeButtonTemplate" id="12">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem11" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem13" inherits="BattleshipsGridMeButtonTemplate" id="13">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem12" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem14" inherits="BattleshipsGridMeButtonTemplate" id="14">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem13" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem15" inherits="BattleshipsGridMeButtonTemplate" id="15">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem14" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem16" inherits="BattleshipsGridMeButtonTemplate" id="16">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem15" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem17" inherits="BattleshipsGridMeButtonTemplate" id="17">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem16" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem18" inherits="BattleshipsGridMeButtonTemplate" id="18">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem17" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem19" inherits="BattleshipsGridMeButtonTemplate" id="19">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem18" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem20" inherits="BattleshipsGridMeButtonTemplate" id="20">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem19" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem21" inherits="BattleshipsGridMeButtonTemplate" id="21">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem11" relativePoint="BOTTOMLEFT" /></Anchors>
+					</Button>
+					<Button name="$parentItem22" inherits="BattleshipsGridMeButtonTemplate" id="22">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem21" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem23" inherits="BattleshipsGridMeButtonTemplate" id="23">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem22" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem24" inherits="BattleshipsGridMeButtonTemplate" id="24">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem23" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem25" inherits="BattleshipsGridMeButtonTemplate" id="25">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem24" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem26" inherits="BattleshipsGridMeButtonTemplate" id="26">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem25" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem27" inherits="BattleshipsGridMeButtonTemplate" id="27">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem26" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem28" inherits="BattleshipsGridMeButtonTemplate" id="28">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem27" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem29" inherits="BattleshipsGridMeButtonTemplate" id="29">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem28" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem30" inherits="BattleshipsGridMeButtonTemplate" id="30">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem29" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem31" inherits="BattleshipsGridMeButtonTemplate" id="31">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem21" relativePoint="BOTTOMLEFT" /></Anchors>
+					</Button>
+					<Button name="$parentItem32" inherits="BattleshipsGridMeButtonTemplate" id="32">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem31" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem33" inherits="BattleshipsGridMeButtonTemplate" id="33">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem32" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem34" inherits="BattleshipsGridMeButtonTemplate" id="34">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem33" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem35" inherits="BattleshipsGridMeButtonTemplate" id="35">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem34" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem36" inherits="BattleshipsGridMeButtonTemplate" id="36">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem35" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem37" inherits="BattleshipsGridMeButtonTemplate" id="37">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem36" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem38" inherits="BattleshipsGridMeButtonTemplate" id="38">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem37" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem39" inherits="BattleshipsGridMeButtonTemplate" id="39">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem38" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem40" inherits="BattleshipsGridMeButtonTemplate" id="40">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem39" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem41" inherits="BattleshipsGridMeButtonTemplate" id="41">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem31" relativePoint="BOTTOMLEFT" /></Anchors>
+					</Button>
+					<Button name="$parentItem42" inherits="BattleshipsGridMeButtonTemplate" id="42">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem41" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem43" inherits="BattleshipsGridMeButtonTemplate" id="43">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem42" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem44" inherits="BattleshipsGridMeButtonTemplate" id="44">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem43" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem45" inherits="BattleshipsGridMeButtonTemplate" id="45">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem44" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem46" inherits="BattleshipsGridMeButtonTemplate" id="46">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem45" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem47" inherits="BattleshipsGridMeButtonTemplate" id="47">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem46" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem48" inherits="BattleshipsGridMeButtonTemplate" id="48">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem47" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem49" inherits="BattleshipsGridMeButtonTemplate" id="49">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem48" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem50" inherits="BattleshipsGridMeButtonTemplate" id="50">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem49" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem51" inherits="BattleshipsGridMeButtonTemplate" id="51">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem41" relativePoint="BOTTOMLEFT" /></Anchors>
+					</Button>
+					<Button name="$parentItem52" inherits="BattleshipsGridMeButtonTemplate" id="52">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem51" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem53" inherits="BattleshipsGridMeButtonTemplate" id="53">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem52" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem54" inherits="BattleshipsGridMeButtonTemplate" id="54">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem53" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem55" inherits="BattleshipsGridMeButtonTemplate" id="55">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem54" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem56" inherits="BattleshipsGridMeButtonTemplate" id="56">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem55" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem57" inherits="BattleshipsGridMeButtonTemplate" id="57">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem56" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem58" inherits="BattleshipsGridMeButtonTemplate" id="58">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem57" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem59" inherits="BattleshipsGridMeButtonTemplate" id="59">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem58" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem60" inherits="BattleshipsGridMeButtonTemplate" id="60">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem59" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem61" inherits="BattleshipsGridMeButtonTemplate" id="61">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem51" relativePoint="BOTTOMLEFT" /></Anchors>
+					</Button>
+					<Button name="$parentItem62" inherits="BattleshipsGridMeButtonTemplate" id="62">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem61" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem63" inherits="BattleshipsGridMeButtonTemplate" id="63">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem62" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem64" inherits="BattleshipsGridMeButtonTemplate" id="64">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem63" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem65" inherits="BattleshipsGridMeButtonTemplate" id="65">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem64" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem66" inherits="BattleshipsGridMeButtonTemplate" id="66">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem65" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem67" inherits="BattleshipsGridMeButtonTemplate" id="67">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem66" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem68" inherits="BattleshipsGridMeButtonTemplate" id="68">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem67" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem69" inherits="BattleshipsGridMeButtonTemplate" id="69">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem68" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem70" inherits="BattleshipsGridMeButtonTemplate" id="70">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem69" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem71" inherits="BattleshipsGridMeButtonTemplate" id="71">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem61" relativePoint="BOTTOMLEFT" /></Anchors>
+					</Button>
+					<Button name="$parentItem72" inherits="BattleshipsGridMeButtonTemplate" id="72">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem71" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem73" inherits="BattleshipsGridMeButtonTemplate" id="73">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem72" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem74" inherits="BattleshipsGridMeButtonTemplate" id="74">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem73" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem75" inherits="BattleshipsGridMeButtonTemplate" id="75">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem74" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem76" inherits="BattleshipsGridMeButtonTemplate" id="76">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem75" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem77" inherits="BattleshipsGridMeButtonTemplate" id="77">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem76" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem78" inherits="BattleshipsGridMeButtonTemplate" id="78">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem77" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem79" inherits="BattleshipsGridMeButtonTemplate" id="79">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem78" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem80" inherits="BattleshipsGridMeButtonTemplate" id="80">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem79" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem81" inherits="BattleshipsGridMeButtonTemplate" id="81">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem71" relativePoint="BOTTOMLEFT" /></Anchors>
+					</Button>
+					<Button name="$parentItem82" inherits="BattleshipsGridMeButtonTemplate" id="82">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem81" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem83" inherits="BattleshipsGridMeButtonTemplate" id="83">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem82" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem84" inherits="BattleshipsGridMeButtonTemplate" id="84">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem83" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem85" inherits="BattleshipsGridMeButtonTemplate" id="85">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem84" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem86" inherits="BattleshipsGridMeButtonTemplate" id="86">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem85" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem87" inherits="BattleshipsGridMeButtonTemplate" id="87">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem86" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem88" inherits="BattleshipsGridMeButtonTemplate" id="88">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem87" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem89" inherits="BattleshipsGridMeButtonTemplate" id="89">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem88" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem90" inherits="BattleshipsGridMeButtonTemplate" id="90">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem89" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem91" inherits="BattleshipsGridMeButtonTemplate" id="91">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem81" relativePoint="BOTTOMLEFT" /></Anchors>
+					</Button>
+					<Button name="$parentItem92" inherits="BattleshipsGridMeButtonTemplate" id="92">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem91" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem93" inherits="BattleshipsGridMeButtonTemplate" id="93">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem92" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem94" inherits="BattleshipsGridMeButtonTemplate" id="94">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem93" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem95" inherits="BattleshipsGridMeButtonTemplate" id="95">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem94" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem96" inherits="BattleshipsGridMeButtonTemplate" id="96">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem95" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem97" inherits="BattleshipsGridMeButtonTemplate" id="97">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem96" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem98" inherits="BattleshipsGridMeButtonTemplate" id="98">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem97" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem99" inherits="BattleshipsGridMeButtonTemplate" id="99">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem98" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem100" inherits="BattleshipsGridMeButtonTemplate" id="100">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem99" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+				</Frames>
+			</Frame>
+			<Frame name="$parentEnemy">
+				<Anchors>
+					<Anchor point="TOPRIGHT">
+						<Offset x="-25" y="-76"/>
+					</Anchor>
+				</Anchors>
+				<Size>
+					<AbsDimension x="302" y="302"/>
+				</Size>
+				<Backdrop bgFile="Interface\TutorialFrame\TutorialFrameBackground"
+				   edgeFile="Interface\DialogFrame\UI-DialogBox-Border" tile="true">
+					<EdgeSize val="16"/>
+					<TileSize val="32"/>
+					<BackgroundInsets left="5" right="5" top="5" bottom="5"/>
+				</Backdrop>
+				<Layers>
+					<Layer level="OVERLAY">
+						<FontString name="$parentLabel" inherits="GameFontNormal" text="Enemy">
+							<Anchors>
+								<Anchor point="CENTER" relativeTo="$parent" relativePoint="TOP">
+									<Offset x="0" y="25"/>
+								</Anchor>
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>
+				<Frames>
+					<Button name="$parentItem1" inherits="BattleshipsGridEnemyButtonTemplate" id="1">
+						<Anchors>
+							<Anchor point="TOPLEFT">
+								<Offset>
+									<AbsDimension x="16" y="-16"/>
+								</Offset>
+							</Anchor>
+						</Anchors>
+					</Button>
+					<Button name="$parentItem2" inherits="BattleshipsGridEnemyButtonTemplate" id="2">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem1" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem3" inherits="BattleshipsGridEnemyButtonTemplate" id="3">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem2" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem4" inherits="BattleshipsGridEnemyButtonTemplate" id="4">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem3" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem5" inherits="BattleshipsGridEnemyButtonTemplate" id="5">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem4" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem6" inherits="BattleshipsGridEnemyButtonTemplate" id="6">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem5" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem7" inherits="BattleshipsGridEnemyButtonTemplate" id="7">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem6" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem8" inherits="BattleshipsGridEnemyButtonTemplate" id="8">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem7" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem9" inherits="BattleshipsGridEnemyButtonTemplate" id="9">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem8" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem10" inherits="BattleshipsGridEnemyButtonTemplate" id="10">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem9" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem11" inherits="BattleshipsGridEnemyButtonTemplate" id="11">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem1" relativePoint="BOTTOMLEFT" /></Anchors>
+					</Button>
+					<Button name="$parentItem12" inherits="BattleshipsGridEnemyButtonTemplate" id="12">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem11" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem13" inherits="BattleshipsGridEnemyButtonTemplate" id="13">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem12" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem14" inherits="BattleshipsGridEnemyButtonTemplate" id="14">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem13" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem15" inherits="BattleshipsGridEnemyButtonTemplate" id="15">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem14" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem16" inherits="BattleshipsGridEnemyButtonTemplate" id="16">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem15" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem17" inherits="BattleshipsGridEnemyButtonTemplate" id="17">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem16" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem18" inherits="BattleshipsGridEnemyButtonTemplate" id="18">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem17" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem19" inherits="BattleshipsGridEnemyButtonTemplate" id="19">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem18" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem20" inherits="BattleshipsGridEnemyButtonTemplate" id="20">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem19" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem21" inherits="BattleshipsGridEnemyButtonTemplate" id="21">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem11" relativePoint="BOTTOMLEFT" /></Anchors>
+					</Button>
+					<Button name="$parentItem22" inherits="BattleshipsGridEnemyButtonTemplate" id="22">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem21" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem23" inherits="BattleshipsGridEnemyButtonTemplate" id="23">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem22" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem24" inherits="BattleshipsGridEnemyButtonTemplate" id="24">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem23" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem25" inherits="BattleshipsGridEnemyButtonTemplate" id="25">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem24" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem26" inherits="BattleshipsGridEnemyButtonTemplate" id="26">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem25" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem27" inherits="BattleshipsGridEnemyButtonTemplate" id="27">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem26" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem28" inherits="BattleshipsGridEnemyButtonTemplate" id="28">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem27" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem29" inherits="BattleshipsGridEnemyButtonTemplate" id="29">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem28" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem30" inherits="BattleshipsGridEnemyButtonTemplate" id="30">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem29" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem31" inherits="BattleshipsGridEnemyButtonTemplate" id="31">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem21" relativePoint="BOTTOMLEFT" /></Anchors>
+					</Button>
+					<Button name="$parentItem32" inherits="BattleshipsGridEnemyButtonTemplate" id="32">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem31" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem33" inherits="BattleshipsGridEnemyButtonTemplate" id="33">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem32" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem34" inherits="BattleshipsGridEnemyButtonTemplate" id="34">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem33" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem35" inherits="BattleshipsGridEnemyButtonTemplate" id="35">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem34" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem36" inherits="BattleshipsGridEnemyButtonTemplate" id="36">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem35" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem37" inherits="BattleshipsGridEnemyButtonTemplate" id="37">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem36" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem38" inherits="BattleshipsGridEnemyButtonTemplate" id="38">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem37" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem39" inherits="BattleshipsGridEnemyButtonTemplate" id="39">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem38" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem40" inherits="BattleshipsGridEnemyButtonTemplate" id="40">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem39" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem41" inherits="BattleshipsGridEnemyButtonTemplate" id="41">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem31" relativePoint="BOTTOMLEFT" /></Anchors>
+					</Button>
+					<Button name="$parentItem42" inherits="BattleshipsGridEnemyButtonTemplate" id="42">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem41" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem43" inherits="BattleshipsGridEnemyButtonTemplate" id="43">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem42" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem44" inherits="BattleshipsGridEnemyButtonTemplate" id="44">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem43" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem45" inherits="BattleshipsGridEnemyButtonTemplate" id="45">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem44" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem46" inherits="BattleshipsGridEnemyButtonTemplate" id="46">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem45" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem47" inherits="BattleshipsGridEnemyButtonTemplate" id="47">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem46" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem48" inherits="BattleshipsGridEnemyButtonTemplate" id="48">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem47" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem49" inherits="BattleshipsGridEnemyButtonTemplate" id="49">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem48" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem50" inherits="BattleshipsGridEnemyButtonTemplate" id="50">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem49" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem51" inherits="BattleshipsGridEnemyButtonTemplate" id="51">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem41" relativePoint="BOTTOMLEFT" /></Anchors>
+					</Button>
+					<Button name="$parentItem52" inherits="BattleshipsGridEnemyButtonTemplate" id="52">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem51" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem53" inherits="BattleshipsGridEnemyButtonTemplate" id="53">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem52" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem54" inherits="BattleshipsGridEnemyButtonTemplate" id="54">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem53" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem55" inherits="BattleshipsGridEnemyButtonTemplate" id="55">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem54" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem56" inherits="BattleshipsGridEnemyButtonTemplate" id="56">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem55" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem57" inherits="BattleshipsGridEnemyButtonTemplate" id="57">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem56" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem58" inherits="BattleshipsGridEnemyButtonTemplate" id="58">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem57" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem59" inherits="BattleshipsGridEnemyButtonTemplate" id="59">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem58" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem60" inherits="BattleshipsGridEnemyButtonTemplate" id="60">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem59" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem61" inherits="BattleshipsGridEnemyButtonTemplate" id="61">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem51" relativePoint="BOTTOMLEFT" /></Anchors>
+					</Button>
+					<Button name="$parentItem62" inherits="BattleshipsGridEnemyButtonTemplate" id="62">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem61" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem63" inherits="BattleshipsGridEnemyButtonTemplate" id="63">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem62" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem64" inherits="BattleshipsGridEnemyButtonTemplate" id="64">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem63" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem65" inherits="BattleshipsGridEnemyButtonTemplate" id="65">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem64" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem66" inherits="BattleshipsGridEnemyButtonTemplate" id="66">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem65" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem67" inherits="BattleshipsGridEnemyButtonTemplate" id="67">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem66" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem68" inherits="BattleshipsGridEnemyButtonTemplate" id="68">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem67" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem69" inherits="BattleshipsGridEnemyButtonTemplate" id="69">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem68" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem70" inherits="BattleshipsGridEnemyButtonTemplate" id="70">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem69" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem71" inherits="BattleshipsGridEnemyButtonTemplate" id="71">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem61" relativePoint="BOTTOMLEFT" /></Anchors>
+					</Button>
+					<Button name="$parentItem72" inherits="BattleshipsGridEnemyButtonTemplate" id="72">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem71" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem73" inherits="BattleshipsGridEnemyButtonTemplate" id="73">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem72" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem74" inherits="BattleshipsGridEnemyButtonTemplate" id="74">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem73" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem75" inherits="BattleshipsGridEnemyButtonTemplate" id="75">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem74" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem76" inherits="BattleshipsGridEnemyButtonTemplate" id="76">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem75" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem77" inherits="BattleshipsGridEnemyButtonTemplate" id="77">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem76" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem78" inherits="BattleshipsGridEnemyButtonTemplate" id="78">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem77" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem79" inherits="BattleshipsGridEnemyButtonTemplate" id="79">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem78" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem80" inherits="BattleshipsGridEnemyButtonTemplate" id="80">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem79" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem81" inherits="BattleshipsGridEnemyButtonTemplate" id="81">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem71" relativePoint="BOTTOMLEFT" /></Anchors>
+					</Button>
+					<Button name="$parentItem82" inherits="BattleshipsGridEnemyButtonTemplate" id="82">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem81" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem83" inherits="BattleshipsGridEnemyButtonTemplate" id="83">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem82" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem84" inherits="BattleshipsGridEnemyButtonTemplate" id="84">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem83" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem85" inherits="BattleshipsGridEnemyButtonTemplate" id="85">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem84" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem86" inherits="BattleshipsGridEnemyButtonTemplate" id="86">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem85" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem87" inherits="BattleshipsGridEnemyButtonTemplate" id="87">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem86" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem88" inherits="BattleshipsGridEnemyButtonTemplate" id="88">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem87" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem89" inherits="BattleshipsGridEnemyButtonTemplate" id="89">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem88" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem90" inherits="BattleshipsGridEnemyButtonTemplate" id="90">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem89" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem91" inherits="BattleshipsGridEnemyButtonTemplate" id="91">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem81" relativePoint="BOTTOMLEFT" /></Anchors>
+					</Button>
+					<Button name="$parentItem92" inherits="BattleshipsGridEnemyButtonTemplate" id="92">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem91" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem93" inherits="BattleshipsGridEnemyButtonTemplate" id="93">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem92" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem94" inherits="BattleshipsGridEnemyButtonTemplate" id="94">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem93" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem95" inherits="BattleshipsGridEnemyButtonTemplate" id="95">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem94" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem96" inherits="BattleshipsGridEnemyButtonTemplate" id="96">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem95" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem97" inherits="BattleshipsGridEnemyButtonTemplate" id="97">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem96" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem98" inherits="BattleshipsGridEnemyButtonTemplate" id="98">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem97" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem99" inherits="BattleshipsGridEnemyButtonTemplate" id="99">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem98" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+					<Button name="$parentItem100" inherits="BattleshipsGridEnemyButtonTemplate" id="100">
+						<Anchors><Anchor point="TOPLEFT" relativeTo="$parentItem99" relativePoint="TOPRIGHT" /></Anchors>
+					</Button>
+				</Frames>
+			</Frame>
+		</Frames>
+		<Scripts>
+			<OnLoad>
+                Battleships:OnLoad(self)
+			</OnLoad>
+			<OnEvent>
+				Battleships:OnEvent(self, event, ...)
+			</OnEvent>
+			<OnEnter>
+				if Battleships.Ships.Picker.enabled then
+					SetCursor("Interface/Cursor/vehichleCursor")
+				end
+			</OnEnter>
+			<OnMouseUp>
+				Battleships:OnMouseUp(self, button)
+			</OnMouseUp>
+			<OnMouseWheel>
+				Battleships:OnMouseWheel(self, delta)
+			</OnMouseWheel>
+		</Scripts>
+	</Frame>
+</Ui>

@@ -1,0 +1,8 @@
+## Interface: 30300
+## Title: Battleships
+## Notes: Strategy-guessing mini game for two players
+## Author: moh
+## Version: 1.0.1
+## DefaultState: Disabled
+
+Battleships.xml
