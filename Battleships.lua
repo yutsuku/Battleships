@@ -525,7 +525,7 @@ function Battleships:OnMouseWheel(self, delta)
 	if Battleships.Ships.Picker.enabled and Battleships.currentCell ~= nil then
 		PlaySound("igMainMenuOpen");
 		
-		Battleships:ClearShadow(Battleships.currentCell)
+		Battleships:ClearShadow(Battleships.currentCell, true)
 		
 		if Battleships.Ships.Picker.rotation == 0 then
 			Battleships.Ships.Picker.rotation = 1
@@ -910,11 +910,15 @@ function Battleships:ContainsShip(t)
 	return false
 end
 
-function Battleships:CanPlaceShip(self)
-	if Battleships.Ships.AllowPlacing == false or Battleships.Ships.Picker.enabled == false then return false end
+function Battleships:CanPlaceShip(button)
+	if Battleships.Ships.AllowPlacing == false or 
+		Battleships.Ships.Picker.enabled == false or
+		not button then 
+		return false 
+	end
 	
 	local direction = "Down"
-	local currentCell = self
+	local currentCell = button
 	local id = currentCell:GetID()
 	local baseName = string.sub(currentCell:GetName(), 1, -1-strlen(id))
 	local baseID = id
@@ -1013,7 +1017,7 @@ function Battleships:CanPlaceShip(self)
 			if direction == "Down" then
 				TopLeft = baseID - 1
 				TopRight = baseID
-				BottomLeft = TopLeft + (Battleships.Ships.Picker.size * 10) + 10
+				BottomLeft = TopLeft + (Battleships.Ships.Picker.size * 10)
 				BottomRight = BottomLeft + 1
 			elseif direction == "Right" then
 				TopLeft = baseID - 1
@@ -1150,19 +1154,19 @@ function Battleships:CanPlaceShip(self)
 	return true
 end
 
-function Battleships:DrawShadow(self)
+function Battleships:DrawShadow(button)
 	if	Battleships.Ships.AllowPlacing == false or 
 		Battleships.Ships.Picker.enabled == false or
-		Battleships:CanPlaceShip(self) == false then
+		Battleships:CanPlaceShip(button) == false then
 		return
 	end
 	
-	local childs = {self:GetChildren()}
-	local id = self:GetID()
+	local childs = {button:GetChildren()}
+	local id = button:GetID()
 	local direction = "Down"
-	local currentCell = self
+	local currentCell = button
 	
-	Battleships.currentCell = self
+	Battleships.currentCell = button
 	
 	if Battleships.Ships.Picker.rotation == 0 then
 		direction = "Down"
@@ -1195,7 +1199,7 @@ function Battleships:DrawShadow(self)
 end
 
 -- works pretty much same way as Battleships:DrawShadow(self), except in reverse mode
-function Battleships:ClearShadow(self)
+function Battleships:ClearShadow(self, quick)
 	if Battleships.Ships.AllowPlacing == false or Battleships.Ships.Picker.enabled == false then return end
 	
 	local direction = "Down"
@@ -1208,18 +1212,35 @@ function Battleships:ClearShadow(self)
 		direction = "Right"
 	end
 	
-	for _, child in ipairs(childs) do
-		if child:GetName() == "ShipShadow" then
-			child:Hide()
-			break
+	if quick then
+		for _, child in ipairs(childs) do
+			if child:GetName() == "ShipShadow" then
+				child:Hide()
+				break
+			end
 		end
+		
+		for i = 1, Battleships.Ships.Picker.size-1 do
+			currentCell = Battleships:GetNeighbourCell(currentCell, direction)
+			if currentCell == nil then break end
+			
+			childs = {currentCell:GetChildren()}
+			for _, child in ipairs(childs) do
+				if child:GetName() == "ShipShadow" then
+					child:Hide()
+					break
+				end
+			end
+		end
+		
+		return
 	end
 	
-	for i = 1, Battleships.Ships.Picker.size-1 do
-		currentCell = Battleships:GetNeighbourCell(currentCell, direction)
-		if currentCell == nil then break end
+	local button
+	for i = 1, 100 do
+		button = _G["BattleshipsFrameMeItem" .. i]
+		childs = {button:GetChildren()}
 		
-		childs = {currentCell:GetChildren()}
 		for _, child in ipairs(childs) do
 			if child:GetName() == "ShipShadow" then
 				child:Hide()

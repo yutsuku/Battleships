@@ -80,10 +80,12 @@
 				Battleships:GridMe_OnClick(self, button)
 			</OnClick>
 			<OnEnter>
+				Battleships.currentCell = self
 				Battleships:DrawShadow(self)
 			</OnEnter>
 			<OnLeave>
-				Battleships:ClearShadow(self)
+				Battleships.currentCell = nil
+				Battleships:ClearShadow(self, true)
 			</OnLeave>
 		</Scripts>
 	</Button>
