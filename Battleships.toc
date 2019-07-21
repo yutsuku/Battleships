@@ -2,7 +2,7 @@
 ## Title: Battleships
 ## Notes: Strategy-guessing mini game for two players
 ## Author: moh
-## Version: 1.0.2
+## Version: 1.0.3
 ## DefaultState: Disabled
 
 Battleships.xml

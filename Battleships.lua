@@ -244,15 +244,6 @@ function Battleships:OnLoad(self)
 	GUI_Button_Ship3 = _G["BattleshipsFrameButtonSubmarine"]
 	GUI_Button_Ship4 = _G["BattleshipsFrameButtonDestroyer"]
 	GUI_Button_Ship5 = _G["BattleshipsFrameButtonCruiser"]
-	
-	-- Create a new button type
-	UnitPopupButtons["SHIPS"]	= { text = "Play ships!", dist = 0, isTitle = 1 };
-	-- Add it to the FRIEND and PLAYER menus as the 2nd to last option (before Cancel)
-	table.insert(UnitPopupMenus["FRIEND"], #UnitPopupMenus["FRIEND"], "SHIPS");
-	table.insert(UnitPopupMenus["PLAYER"], #UnitPopupMenus["PLAYER"], "SHIPS");
-
-	-- Hook ToggleDropDownMenu with your function
-	hooksecurefunc("ToggleDropDownMenu", Battleships.DropDown_Setup);
 end
 
 function Battleships:BuildMessage(...)
@@ -1509,36 +1500,6 @@ end
 
 SLASH_BATTLESHIPS1 = "/ships";
 SLASH_BATTLESHIPS2 = "/seabattle";
-
-
-function Battleships.DropDown_Setup(level, value, dropDownFrame, anchorName, xOffset, yOffset, menuList, button)
-	-- Make sure we have what we need to continue
-	if (dropDownFrame and level) then
-		-- Just so we don't have to concat strings for each interval
-		local buttonPrefix = "DropDownList" .. level .. "Button"
-		-- Start at 2 because 1 is always going to be the title (i.e. player name) in our case
-		local i = 2;
-		while (1) do
-			-- Get the button at index i in the dropdown
-			local button = _G[buttonPrefix..i]
-			if (not button) then break end;
-			-- If the button is our button...
-			if (button:GetText() == UnitPopupButtons["SHIPS"].text) then
-				if debug then
-					DEFAULT_CHAT_FRAME:AddMessage(tostring(level))
-					DEFAULT_CHAT_FRAME:AddMessage(tostring(button))
-					DEFAULT_CHAT_FRAME:AddMessage(tostring(button:GetName()))
-					DEFAULT_CHAT_FRAME:AddMessage(tostring(button:GetID()))
-				end
-				button.func = function() Battleships:Network_PreInvite(_G[buttonPrefix.."1"]:GetText()) end
-				break
-			end
-			i = i + 1
-		end
-	end
-end
-
-
 
 StaticPopupDialogs["SHIPS_INVITE"] = {
 	text = Battleships.InviteText,
